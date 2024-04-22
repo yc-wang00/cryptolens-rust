@@ -1,98 +1,101 @@
-<div align="center" id="top"> 
-  <img src="./.github/app.gif" alt="Cryptolens Rust" />
 
-  &#xa0;
-
-  <!-- <a href="https://cryptolensrust.netlify.app">Demo</a> -->
-</div>
 
 <h1 align="center">Cryptolens Rust Client</h1>
 
 <p align="center">
-  <img alt="Github top language" src="https://img.shields.io/github/languages/top/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8">
+  <img alt="Github top language" src="https://img.shields.io/github/languages/top/yc-wang00/cryptolens-rust?color=56BEB8">
 
-  <img alt="Github language count" src="https://img.shields.io/github/languages/count/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8">
+  <img alt="Github language count" src="https://img.shields.io/github/languages/count/yc-wang00/cryptolens-rust?color=56BEB8">
 
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8">
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/yc-wang00/cryptolens-rust?color=56BEB8">
 
-  <img alt="License" src="https://img.shields.io/github/license/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8">
+  <!-- <img alt="License" src="https://img.shields.io/github/license/yc-wang00/cryptolens-rust?color=56BEB8"> -->
 
-  <!-- <img alt="Github issues" src="https://img.shields.io/github/issues/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8" /> -->
+  <!-- <img alt="Github issues" src="https://img.shields.io/github/issues/yc-wang00/cryptolens-rust?color=56BEB8" /> -->
 
-  <!-- <img alt="Github forks" src="https://img.shields.io/github/forks/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8" /> -->
+  <!-- <img alt="Github forks" src="https://img.shields.io/github/forks/yc-wang00/cryptolens-rust?color=56BEB8" /> -->
 
-  <!-- <img alt="Github stars" src="https://img.shields.io/github/stars/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust?color=56BEB8" /> -->
+  <!-- <img alt="Github stars" src="https://img.shields.io/github/stars/yc-wang00/cryptolens-rust?color=56BEB8" /> -->
 </p>
 
-<!-- Status -->
+## Contents
 
-<!-- <h4 align="center"> 
-	🚧  Cryptolens Rust 🚀 Under construction...  🚧
-</h4> 
+- [Contents](#contents)
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Example](#example)
+- [Contributions](#contributions)
+- [License](#license)
 
-<hr> -->
 
-<p align="center">
-  <a href="#dart-about">About</a> &#xa0; | &#xa0; 
-  <a href="#sparkles-features">Features</a> &#xa0; | &#xa0;
-  <a href="#rocket-technologies">Technologies</a> &#xa0; | &#xa0;
-  <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
-  <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
-  <a href="#memo-license">License</a> &#xa0; | &#xa0;
-  <a href="https://github.com/{{YOUR_GITHUB_USERNAME}}" target="_blank">Author</a>
-</p>
 
-<br>
 
-## :dart: About ##
+## About
 
-Describe your project
+This crate provides helper functions for managing and verifying license keys using Cryptolens. It simplifies the process of key activations, validations, and also offers utilities for handling RSA keys for digital signatures.
 
-## :sparkles: Features ##
 
-:heavy_check_mark: Feature 1;\
-:heavy_check_mark: Feature 2;\
-:heavy_check_mark: Feature 3;
+**Why I make this crate?** 
 
-## :rocket: Technologies ##
 
-The following tools were used in this project:
+In the official Cryptolens GitHub repository, there is an existing cryptolens-rust crate, but its last update was 5 years ago (2019), and it appears that some of its functionality may no longer be working correctly. Since there were no up-to-date alternatives available for using Cryptolens with Rust, I created this crate to provide a maintained and functioning solution for the Rust community.
 
-- [Expo](https://expo.io/)
-- [Node.js](https://nodejs.org/en/)
-- [React](https://pt-br.reactjs.org/)
-- [React Native](https://reactnative.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
 
-## :white_check_mark: Requirements ##
+## Installation
 
-Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) and [Node](https://nodejs.org/en/) installed.
+Add this to your `Cargo.toml`:
 
-## :checkered_flag: Starting ##
-
-```bash
-# Clone this project
-$ git clone https://github.com/{{YOUR_GITHUB_USERNAME}}/cryptolens-rust
-
-# Access
-$ cd cryptolens-rust
-
-# Install dependencies
-$ yarn
-
-# Run the project
-$ yarn start
-
-# The server will initialize in the <http://localhost:3000>
+```toml
+[dependencies]
+cryptolens_yc = "0.1.0"
 ```
 
-## :memo: License ##
+## Usage
 
-This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
+To start using the `cryptolens_yc` crate, you need to include it in your Rust project and use the provided functions to activate and validate license keys.
+
+### Example
+
+Here is a basic example demonstrating how to activate a license key and verify its signature:
+
+```rust
+use cryptolens_yc::{key_activate, KeyActivateArguments};
+
+let public_key = "<RSAKeyValue><Modulus>...</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+let product_id = "3646";
+let key = "MPDWY-PQAOW-FKSCH-SGAAU";
+let token = "WyI0NjUiLCJBWTBGTlQwZm9WV0FyVnZzMEV1Mm9LOHJmRDZ1SjF0Vk52WTU0VzB2Il0=";
+
+let license_key = key_activate(
+    token,
+    KeyActivateArguments {
+        ProductId: product_id.parse().unwrap(),
+        Key: key.to_string(),
+        MachineCode: "289jf2afs3".to_string(),
+        ..Default::default()
+    },
+).unwrap();
+
+match license_key.has_valid_signature(public_key) {
+    Ok(valid) => assert_eq!(valid, true),
+    Err(e) => panic!("Error: {}", e),
+}
+```
+
+This example shows how to activate a license and check if the returned license has a valid signature with the given public RSA key.
+
+## Contributions
+
+Contributions are welcome! Please fork the repository and open a pull request with your changes.
 
 
-Made with :heart: by <a href="https://github.com/{{YOUR_GITHUB_USERNAME}}" target="_blank">{{YOUR_NAME}}</a>
+## License
+
+This project is under license from MIT. For more details, see the [LICENSE](LICENSE) file.
+
 
 &#xa0;
 
 <a href="#top">Back to top</a>
+
