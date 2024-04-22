@@ -9,15 +9,15 @@
 //! Basic usage:
 //!
 //! ```
-//! 
+//!
 //! use cryptolens_yc::{key_activate, KeyActivateArguments};
 //! // this is the example in original documentation
 //! let public_key = "<RSAKeyValue><Modulus>khbyu3/vAEBHi339fTuo2nUaQgSTBj0jvpt5xnLTTF35FLkGI+5Z3wiKfnvQiCLf+5s4r8JB/Uic/i6/iNjPMILlFeE0N6XZ+2pkgwRkfMOcx6eoewypTPUoPpzuAINJxJRpHym3V6ZJZ1UfYvzRcQBD/lBeAYrvhpCwukQMkGushKsOS6U+d+2C9ZNeP+U+uwuv/xu8YBCBAgGb8YdNojcGzM4SbCtwvJ0fuOfmCWZvUoiumfE4x7rAhp1pa9OEbUe0a5HL+1v7+JLBgkNZ7Z2biiHaM6za7GjHCXU8rojatEQER+MpgDuQV3ZPx8RKRdiJgPnz9ApBHFYDHLDzDw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
-//! 
+//!
 //! let product_id = "3646";
 //! let key = "MPDWY-PQAOW-FKSCH-SGAAU";
 //! let token = "WyI0NjUiLCJBWTBGTlQwZm9WV0FyVnZzMEV1Mm9LOHJmRDZ1SjF0Vk52WTU0VzB2Il0=";
-//! 
+//!
 //! let license_key = key_activate(
 //!     token,
 //!     KeyActivateArguments {
@@ -27,18 +27,17 @@
 //!         ..Default::default()
 //!     },
 //! ).unwrap();
-//! 
+//!
 //! match license_key.has_valid_signature(public_key) {
 //!     Ok(valid) => assert_eq!(valid, true),
 //!     Err(e) => panic!("Error: {}", e),
 //! }
-//! 
+//!
 //! ```
-//! 
+//!
 
 use base64::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_xml_rs;
 
 /// Represents an RSA key value pair with modulus and exponent.
 #[derive(Serialize, Deserialize, Debug)]
@@ -177,7 +176,6 @@ pub struct LicenseKey {
     signature_bytes: Vec<u8>,
 }
 
-
 /// Represents the response from an activation request.
 #[derive(Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
@@ -196,14 +194,14 @@ impl LicenseKey {
     ///
     /// # Errors
     /// Returns an error if parsing fails or if base64 decoding is unsuccessful.
-    pub fn from_str(s: &str) -> anyhow::Result<LicenseKey> {
-        let activate_response: ActivateResponse = serde_json::from_str(&s)?;
+    pub fn from_response_str(s: &str) -> anyhow::Result<LicenseKey> {
+        let activate_response: ActivateResponse = serde_json::from_str(s)?;
 
         let license_key = activate_response.licenseKey;
         let signature = activate_response.signature;
 
-        let license_key_bytes = BASE64_STANDARD.decode(&license_key)?;
-        let signature_bytes = BASE64_STANDARD.decode(&signature.unwrap())?;
+        let license_key_bytes = BASE64_STANDARD.decode(license_key)?;
+        let signature_bytes = BASE64_STANDARD.decode(signature.unwrap())?;
 
         let license_key_string = String::from_utf8(license_key_bytes.clone())?;
         let serde_lk: SerdeLicenseKey = serde_json::from_str(&license_key_string)?;
@@ -233,12 +231,12 @@ impl LicenseKey {
             AllowedMachines: serde_lk
                 .AllowedMachines
                 .map(|s| s.split('\n').map(|x| x.to_string()).collect())
-                .unwrap_or_else(Vec::new),
+                .unwrap_or_default(),
             DataObjects: serde_lk.DataObjects,
             SignDate: serde_lk.SignDate,
 
-            license_key_bytes: license_key_bytes,
-            signature_bytes: signature_bytes,
+            license_key_bytes,
+            signature_bytes,
         })
     }
 
@@ -309,14 +307,12 @@ pub fn key_activate(token: &str, args: KeyActivateArguments) -> anyhow::Result<L
     }
 
     // otherwise, return the license key
-    LicenseKey::from_str(&s)
+    LicenseKey::from_response_str(&s)
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn test_key_activate() {
@@ -335,10 +331,11 @@ mod tests {
                 MachineCode: "289jf2afs3".to_string(),
                 ..Default::default()
             },
-        ).unwrap();
+        )
+        .unwrap();
 
         match license_key.has_valid_signature(public_key) {
-            Ok(valid) => assert_eq!(valid, true),
+            Ok(valid) => assert!(valid),
             Err(e) => panic!("Error: {}", e),
         }
     }
