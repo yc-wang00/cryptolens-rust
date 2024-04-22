@@ -1,0 +1,43 @@
+version: '3'
+
+# --------------------------------------------------------------------------------------------------------------------
+# --- PATHS
+# --------------------------------------------------------------------------------------------------------------------
+
+vars:
+  ROOT_PATH: '{{.TASKFILE_DIR}}'
+  SRC_PATH: '{{.TASKFILE_DIR}}/src'
+  LINT_PATHS: '{{.SRC_PATH}}'
+
+# --------------------------------------------------------------------------------------------------------------------
+# --- CONFIGURATION
+# --------------------------------------------------------------------------------------------------------------------
+silent: true
+
+tasks:
+  # ------------------------------------------- Default -------------------------------------------- #
+
+  check: 
+    desc: Check code. Works like pre-commit.
+    cmds:
+      - echo "Checking code format...[fmt]"
+      - cargo fmt -- --check
+      - echo "Checking the package for errors...[check]"
+      - cargo check --all
+      - echo "Linting rust sources...[clippy]"
+      - cargo clippy --all-targets --all-features --tests --benches -- -D warnings
+      - echo "Executing rust tests...[nextest]"
+      - cargo nextest run --all-features
+
+  fmt: 
+    desc: "Format code"
+    cmds:
+      - cargo fmt 
+    silent: true
+
+  # -------------------------------------------- Testing ------------------------------------------- #
+  
+  test: 
+    desc: "Run tests"
+    cmds:
+      - cargo nextest run --all-features

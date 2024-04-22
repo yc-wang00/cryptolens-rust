@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "template"
+name = "cryptolens-rust-yc"
 version = "0.1.0"
