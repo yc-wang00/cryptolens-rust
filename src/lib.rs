@@ -36,6 +36,9 @@
 //! ```
 //!
 
+use std::fs::File;
+use std::io::Write;
+
 use base64::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -270,6 +273,14 @@ impl LicenseKey {
     }
 }
 
+/// Activates a license key using the cryptolens API.
+///
+/// # Arguments
+/// * `token` - A string slice containing the token to use for the activation.
+/// * `args` - A `KeyActivateArguments` struct containing the arguments for the activation.
+///
+/// # Returns
+/// Returns a `LicenseKey` struct containing the activated license key.
 pub fn key_activate(token: &str, args: KeyActivateArguments) -> anyhow::Result<LicenseKey> {
     // Create a new reqwest client (blocking)
     let client = reqwest::blocking::Client::new();
@@ -310,6 +321,44 @@ pub fn key_activate(token: &str, args: KeyActivateArguments) -> anyhow::Result<L
     LicenseKey::from_response_str(&s)
 }
 
+/// Encodes and saves a license key to a file.
+///
+/// # Arguments
+/// * `license_key` - A reference to a `LicenseKey` struct to save.
+/// * `path` - A string slice containing the path to save the license key to.
+///
+/// # Errors
+/// Returns an error if the file cannot be created or written to.
+pub fn save_license_key_to_file(license_key: &LicenseKey, path: &str) -> anyhow::Result<()> {
+    let mut file = File::create(path)?;
+    let activate_response = ActivateResponse {
+        licenseKey: BASE64_STANDARD.encode(&license_key.license_key_bytes),
+        signature: Some(BASE64_STANDARD.encode(&license_key.signature_bytes)),
+        result: 0,
+        message: "".to_string(),
+    };
+    let s = serde_json::to_string(&activate_response)?;
+    file.write_all(s.as_bytes())?;
+    Ok(())
+}
+
+/// Loads a license key from a file.
+///
+/// # Arguments
+/// * `path` - A string slice containing the path to the file to load.
+///
+/// # Errors
+/// Returns an error if the file cannot be read or if the license key cannot be parsed.
+///
+/// # Returns
+/// Returns a `LicenseKey` struct containing the loaded license key.
+pub fn load_license_key_from_file(path: &str) -> anyhow::Result<LicenseKey> {
+    let activate_response_str = std::fs::read_to_string(path)?;
+    let license_key = LicenseKey::from_response_str(&activate_response_str)?;
+
+    Ok(license_key)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -335,8 +384,59 @@ mod tests {
         .unwrap();
 
         match license_key.has_valid_signature(public_key) {
-            Ok(valid) => assert!(valid),
+            Ok(valid) => assert!(valid, "Signature should be valid"),
             Err(e) => panic!("Error: {}", e),
         }
+    }
+
+    #[test]
+    fn test_save_license_key_to_file() {
+        let license_key = LicenseKey {
+            ProductId: 3646,
+            Id: Some(1),
+            Key: Some("XXXXX-XXXXX-XXXXX-XXXXX".to_string()),
+            Created: 1614556800,
+            Expires: 1614556800,
+            Period: 0,
+            F1: false,
+            F2: false,
+            F3: false,
+            F4: false,
+            F5: false,
+            F6: false,
+            F7: false,
+            F8: false,
+            Notes: None,
+            Block: false,
+            GlobalId: None,
+            Customer: None,
+            ActivatedMachines: vec![],
+            TrialActivation: false,
+            MaxNoOfMachines: None,
+            AllowedMachines: vec![],
+            DataObjects: vec![],
+            SignDate: 1614556800,
+            license_key_bytes: vec![1, 2, 3, 4, 5],
+            signature_bytes: vec![1, 2, 3, 4, 5],
+        };
+
+        let path = "test_license_key";
+        save_license_key_to_file(&license_key, path).unwrap();
+        assert!(std::path::Path::new(path).exists());
+
+        // cleanup
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn test_load_license_key_from_file() {
+        let path = "fixtures/test_license_key";
+        let public_key = "<RSAKeyValue><Modulus>khbyu3/vAEBHi339fTuo2nUaQgSTBj0jvpt5xnLTTF35FLkGI+5Z3wiKfnvQiCLf+5s4r8JB/Uic/i6/iNjPMILlFeE0N6XZ+2pkgwRkfMOcx6eoewypTPUoPpzuAINJxJRpHym3V6ZJZ1UfYvzRcQBD/lBeAYrvhpCwukQMkGushKsOS6U+d+2C9ZNeP+U+uwuv/xu8YBCBAgGb8YdNojcGzM4SbCtwvJ0fuOfmCWZvUoiumfE4x7rAhp1pa9OEbUe0a5HL+1v7+JLBgkNZ7Z2biiHaM6za7GjHCXU8rojatEQER+MpgDuQV3ZPx8RKRdiJgPnz9ApBHFYDHLDzDw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+
+        let license_key = load_license_key_from_file(path).unwrap();
+        assert!(license_key.ProductId == 3646);
+        assert!(license_key.Key == Some("MPDWY-PQAOW-FKSCH-SGAAU".to_string()));
+
+        assert!(license_key.has_valid_signature(public_key).unwrap());
     }
 }
