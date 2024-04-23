@@ -35,14 +35,14 @@
 //! ### Offline Validation Example
 //!```rust
 //! // get the license key from above code ...
-//! 
+//!
 //! // save the license key to a file
 //! let path = "cached_license_key";
 //! save_license_key_to_file(&license_key, path)?;
-//! 
+//!
 //! // you can also load the license key from a file
 //! let loaded_license_key = cryptolens_yc::load_license_key_from_file(path)?;
-//! 
+//!
 //! // validate the loaded license key
 //! match loaded_license_key.has_valid_signature(public_key) {
 //!     Ok(valid) => assert_eq!(valid, true),
