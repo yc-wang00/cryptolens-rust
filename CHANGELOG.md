@@ -9,10 +9,16 @@ and this project adheres to [Semantic Versioning].
 
 - /
 
+## [0.2.0] - 2024-04-23
 
-## [0.0.1] - 2024-02-23
+- add offline validation helper function: save to files and load from files
+
+
+## [0.1.0] - 2024-04-22
 
 - init repo
+- add basic usage, key validation functionality 
+- pushed to crates.io
 
 <!-- Links -->
 
