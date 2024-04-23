@@ -6,10 +6,9 @@
 //!
 //! ## Examples
 //!
-//! Basic usage:
+//! ### Basic usage:
 //!
 //! ```
-//!
 //! use cryptolens_yc::{key_activate, KeyActivateArguments};
 //! // this is the example in original documentation
 //! let public_key = "<RSAKeyValue><Modulus>khbyu3/vAEBHi339fTuo2nUaQgSTBj0jvpt5xnLTTF35FLkGI+5Z3wiKfnvQiCLf+5s4r8JB/Uic/i6/iNjPMILlFeE0N6XZ+2pkgwRkfMOcx6eoewypTPUoPpzuAINJxJRpHym3V6ZJZ1UfYvzRcQBD/lBeAYrvhpCwukQMkGushKsOS6U+d+2C9ZNeP+U+uwuv/xu8YBCBAgGb8YdNojcGzM4SbCtwvJ0fuOfmCWZvUoiumfE4x7rAhp1pa9OEbUe0a5HL+1v7+JLBgkNZ7Z2biiHaM6za7GjHCXU8rojatEQER+MpgDuQV3ZPx8RKRdiJgPnz9ApBHFYDHLDzDw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
@@ -32,7 +31,23 @@
 //!     Ok(valid) => assert_eq!(valid, true),
 //!     Err(e) => panic!("Error: {}", e),
 //! }
-//!
+//!```
+//! ### Offline Validation Example
+//!```rust
+//! // get the license key from above code ...
+//! 
+//! // save the license key to a file
+//! let path = "cached_license_key";
+//! save_license_key_to_file(&license_key, path)?;
+//! 
+//! // you can also load the license key from a file
+//! let loaded_license_key = cryptolens_yc::load_license_key_from_file(path)?;
+//! 
+//! // validate the loaded license key
+//! match loaded_license_key.has_valid_signature(public_key) {
+//!     Ok(valid) => assert_eq!(valid, true),
+//!     Err(e) => panic!("Error: {}", e),
+//! }
 //! ```
 //!
 

@@ -25,6 +25,8 @@
 - [Installation](#installation)
 - [Usage](#usage)
   - [Example](#example)
+    - [Basic usage example](#basic-usage-example)
+    - [Offline validation example:](#offline-validation-example)
 - [Contributions](#contributions)
 - [License](#license)
 
@@ -42,13 +44,15 @@ This crate provides helper functions for managing and verifying license keys usi
 In the official Cryptolens GitHub repository, there is an existing cryptolens-rust crate, but its last update was 5 years ago (2019), and it appears that some of its functionality may no longer be working correctly. Since there were no up-to-date alternatives available for using Cryptolens with Rust, I created this crate to provide a maintained and functioning solution for the Rust community.
 
 
+**04/23/2024 Updated 0.2.0 add offline validation function and example**
+
 ## Installation
 
 Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-cryptolens_yc = "0.1.0"
+cryptolens_yc = "0.2.0"
 ```
 
 ## Usage
@@ -57,6 +61,7 @@ To start using the `cryptolens_yc` crate, you need to include it in your Rust pr
 
 ### Example
 
+#### Basic usage example
 Here is a basic example demonstrating how to activate a license key and verify its signature:
 
 ```rust
@@ -84,6 +89,26 @@ match license_key.has_valid_signature(public_key) {
 ```
 
 This example shows how to activate a license and check if the returned license has a valid signature with the given public RSA key.
+
+#### Offline validation example: 
+
+```rust
+// get the license key from above code ...
+
+// save the license key to a file
+let path = "cached_license_key";
+save_license_key_to_file(&license_key, path)?;
+
+// you can also load the license key from a file
+let loaded_license_key = cryptolens_yc::load_license_key_from_file(path)?;
+
+// validate the loaded license key
+match loaded_license_key.has_valid_signature(public_key) {
+    Ok(valid) => assert_eq!(valid, true),
+    Err(e) => panic!("Error: {}", e),
+}
+```
+
 
 ## Contributions
 
